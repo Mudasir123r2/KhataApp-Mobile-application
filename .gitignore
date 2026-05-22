@@ -1,0 +1,64 @@
+# Built application files
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+release/
+
+# Gradle files
+.gradle/
+build/
+/local.properties
+
+# Android Studio / IntelliJ IDEA
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/.gitignore
+*.iws
+*.ipr
+
+# External native build
+.externalNativeBuild/
+.cxx/
+
+# Signing keystore (never commit these)
+*.jks
+*.keystore
+*.p12
+
+# Local configuration
+local.properties
+keystore.properties
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Log files
+*.log
+
+# Kotlin build cache
+kotlin/
+
+# Dependency lock files (optional — remove if you want to commit them)
+# gradle/wrapper/gradle-wrapper.jar   ← keep this (needed for CI)
