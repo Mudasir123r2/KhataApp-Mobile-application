@@ -129,7 +129,6 @@ fun AddTransactionScreen(
                 maxLines = 3
             )
 
-            // Due date picker
             OutlinedTextField(
                 value = dueDate?.let { dueFmt.format(Date(it)) } ?: "",
                 onValueChange = {},

@@ -104,7 +104,6 @@ fun CustomerListScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
-            // Search bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.searchQuery.value = it },

@@ -126,7 +126,6 @@ fun TransactionScreen(
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             BalanceSummaryCard(balance = totalBalance, modifier = Modifier.padding(16.dp))
 
-            // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)

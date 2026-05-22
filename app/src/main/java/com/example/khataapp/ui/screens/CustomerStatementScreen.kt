@@ -96,7 +96,6 @@ fun CustomerStatementScreen(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            // Summary card
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -143,7 +142,6 @@ fun CustomerStatementScreen(
                 }
             }
 
-            // Date filter chips
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),

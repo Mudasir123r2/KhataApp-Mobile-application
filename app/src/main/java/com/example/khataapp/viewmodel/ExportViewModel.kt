@@ -52,7 +52,6 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
                 withContext(Dispatchers.IO) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        // API 29+ — no permission needed
                         val values = ContentValues().apply {
                             put(MediaStore.Downloads.DISPLAY_NAME, fileName)
                             put(MediaStore.Downloads.MIME_TYPE, "text/csv")
@@ -70,7 +69,6 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
                             context.contentResolver.update(it, values, null, null)
                         }
                     } else {
-                        // Older Android — write to public Downloads
                         @Suppress("DEPRECATION")
                         val dir  = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                         val file = File(dir, fileName)

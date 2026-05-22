@@ -85,7 +85,6 @@ fun AllTransactionsScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
 
-            // Search bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { viewModel.searchQuery.value = it },
@@ -95,7 +94,6 @@ fun AllTransactionsScreen(
                 singleLine = true
             )
 
-            // Type filter chips
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -109,7 +107,6 @@ fun AllTransactionsScreen(
                 }
             }
 
-            // Summary bar
             Card(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(12.dp),
@@ -193,7 +190,6 @@ private fun AllTxRow(tx: TransactionWithCustomer, onClick: () -> Unit) {
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Avatar
         Box(
             modifier = Modifier.size(40.dp).clip(CircleShape)
                 .background(if (isCredit) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)),

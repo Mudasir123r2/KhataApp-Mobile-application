@@ -7,8 +7,8 @@ import com.example.khataapp.data.repository.AuthRepository
 import com.example.khataapp.data.repository.KhataRepository
 
 class KhataApplication : Application() {
-    val database       by lazy { AppDatabase.getDatabase(this) }
-    val repository     by lazy { KhataRepository(database.customerDao(), database.transactionDao()) }
+    val database        by lazy { AppDatabase.getDatabase(this) }
+    val repository      by lazy { KhataRepository(database.customerDao(), database.transactionDao()) }
     val userPreferences by lazy { UserPreferences(this) }
-    val authRepository by lazy { AuthRepository(userPreferences) }
+    val authRepository  by lazy { AuthRepository(database.userDao(), userPreferences) }
 }

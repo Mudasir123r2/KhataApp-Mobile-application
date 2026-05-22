@@ -98,7 +98,6 @@ class TransactionViewModel(
 
         val fullPhone = resolvePhone(c.phone)
 
-        // Try WhatsApp scheme directly (most reliable on device)
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse("whatsapp://send?phone=$fullPhone&text=${Uri.encode(msg)}")
@@ -106,7 +105,6 @@ class TransactionViewModel(
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            // Fallback: open wa.me in browser
             try {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     data = Uri.parse("https://wa.me/$fullPhone?text=${Uri.encode(msg)}")

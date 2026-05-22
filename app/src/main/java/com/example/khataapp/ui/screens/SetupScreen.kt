@@ -16,10 +16,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -39,32 +45,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.khataapp.viewmodel.AuthUiState
 import com.example.khataapp.viewmodel.AuthViewModel
 
 @Composable
-fun SetupScreen(
-    onSetupComplete: () -> Unit,
+fun RegisterScreen(
+    onRegisterSuccess: () -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var ownerName by remember { mutableStateOf("") }
-    var shopName  by remember { mutableStateOf("") }
-    var phone     by remember { mutableStateOf("") }
-    var pin       by remember { mutableStateOf("") }
-    var confirmPin by remember { mutableStateOf("") }
-    var errorMsg  by remember { mutableStateOf<String?>(null) }
+    var username        by remember { mutableStateOf("") }
+    var password        by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var shopName        by remember { mutableStateOf("") }
+    var ownerName       by remember { mutableStateOf("") }
+    var phone           by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmVisible  by remember { mutableStateOf(false) }
+    var errorMsg        by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(uiState) {
-        if (uiState is AuthUiState.Success) {
-            viewModel.resetState()
-            onSetupComplete()
-        }
-        if (uiState is AuthUiState.Error) {
-            errorMsg = (uiState as AuthUiState.Error).message
+        when (uiState) {
+            is AuthUiState.Success -> { viewModel.resetState(); onRegisterSuccess() }
+            is AuthUiState.Error   -> errorMsg = (uiState as AuthUiState.Error).message
+            else                   -> {}
         }
     }
 
@@ -80,20 +88,30 @@ fun SetupScreen(
                 .imePadding()
         ) {
             Column(
-                modifier = Modifier.padding(32.dp),
+                modifier = Modifier.padding(horizontal = 32.dp, vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(32.dp))
                 Box(
-                    modifier = Modifier.size(72.dp).clip(CircleShape)
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
-                ) { Text("🏪", style = MaterialTheme.typography.headlineLarge) }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Setup Your Shop", style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Enter your details to get started", style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f))
+                ) {
+                    Text("🏪", style = MaterialTheme.typography.headlineLarge)
+                }
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "Create Account",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Set up your shop profile",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
             }
 
             Card(
@@ -103,68 +121,104 @@ fun SetupScreen(
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Shop Information", style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
 
-                    SetupField("Shop Name", shopName, { shopName = it; errorMsg = null },
-                        KeyboardCapitalization.Words)
-                    SetupField("Your Name (Owner)", ownerName, { ownerName = it; errorMsg = null },
-                        KeyboardCapitalization.Words)
-                    SetupField("Phone Number", phone, { phone = it; errorMsg = null },
-                        KeyboardCapitalization.None, KeyboardType.Phone)
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text("Security PIN", style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-
-                    OutlinedTextField(
-                        value = pin,
-                        onValueChange = { if (it.length <= 4 && it.all(Char::isDigit)) { pin = it; errorMsg = null } },
-                        label = { Text("4-Digit PIN") },
-                        modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        singleLine = true,
-                        colors = fieldColors()
+                    Text(
+                        "Shop Information",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
+
+                    RegField("Shop Name", shopName, { shopName = it; errorMsg = null }, KeyboardCapitalization.Words)
+                    RegField("Owner Name", ownerName, { ownerName = it; errorMsg = null }, KeyboardCapitalization.Words)
+                    RegField("Phone Number", phone, { phone = it; errorMsg = null }, KeyboardCapitalization.None, KeyboardType.Phone)
+
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Login Credentials",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    RegField("Username (min 3 chars)", username, { username = it; errorMsg = null }, KeyboardCapitalization.None)
+
                     OutlinedTextField(
-                        value = confirmPin,
-                        onValueChange = { if (it.length <= 4 && it.all(Char::isDigit)) { confirmPin = it; errorMsg = null } },
-                        label = { Text("Confirm PIN") },
+                        value = password,
+                        onValueChange = { password = it; errorMsg = null },
+                        label = { Text("Password (min 6 chars)") },
                         modifier = Modifier.fillMaxWidth(),
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         singleLine = true,
-                        isError = confirmPin.isNotEmpty() && pin != confirmPin,
-                        supportingText = if (confirmPin.isNotEmpty() && pin != confirmPin) {
-                            { Text("PINs do not match") }
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        colors = regFieldColors()
+                    )
+
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it; errorMsg = null },
+                        label = { Text("Confirm Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        visualTransformation = if (confirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        isError = confirmPassword.isNotEmpty() && password != confirmPassword,
+                        supportingText = if (confirmPassword.isNotEmpty() && password != confirmPassword) {
+                            { Text("Passwords do not match") }
                         } else null,
-                        colors = fieldColors()
+                        trailingIcon = {
+                            IconButton(onClick = { confirmVisible = !confirmVisible }) {
+                                Icon(
+                                    imageVector = if (confirmVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        colors = regFieldColors()
                     )
 
                     errorMsg?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall)
+                        Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            if (pin != confirmPin) { errorMsg = "PINs do not match"; return@Button }
-                            viewModel.setup(ownerName, shopName, phone, pin)
+                            viewModel.register(
+                                username.trim(), password, confirmPassword,
+                                shopName.trim(), ownerName.trim(), phone.trim()
+                            )
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         enabled = uiState !is AuthUiState.Loading
                     ) {
-                        Text("Create Account", modifier = Modifier.padding(vertical = 6.dp),
-                            fontWeight = FontWeight.Bold)
+                        if (uiState is AuthUiState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text(
+                                "Create Account",
+                                modifier = Modifier.padding(vertical = 6.dp),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
                 }
             }
         }
@@ -172,7 +226,7 @@ fun SetupScreen(
 }
 
 @Composable
-private fun SetupField(
+private fun RegField(
     label: String, value: String, onChange: (String) -> Unit,
     cap: KeyboardCapitalization, keyboardType: KeyboardType = KeyboardType.Text
 ) {
@@ -182,13 +236,13 @@ private fun SetupField(
         modifier = Modifier.fillMaxWidth(),
         keyboardOptions = KeyboardOptions(capitalization = cap, keyboardType = keyboardType),
         singleLine = true,
-        colors = fieldColors()
+        colors = regFieldColors()
     )
 }
 
 @Composable
-private fun fieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor   = MaterialTheme.colorScheme.primary,
-    focusedLabelColor    = MaterialTheme.colorScheme.primary,
-    cursorColor          = MaterialTheme.colorScheme.primary
+private fun regFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    focusedLabelColor  = MaterialTheme.colorScheme.primary,
+    cursorColor        = MaterialTheme.colorScheme.primary
 )

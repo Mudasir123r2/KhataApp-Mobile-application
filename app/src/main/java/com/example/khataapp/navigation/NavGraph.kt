@@ -19,29 +19,29 @@ import com.example.khataapp.ui.screens.LoginScreen
 import com.example.khataapp.ui.screens.OnboardingScreen
 import com.example.khataapp.ui.screens.OverdueScreen
 import com.example.khataapp.ui.screens.ProfileScreen
+import com.example.khataapp.ui.screens.RegisterScreen
 import com.example.khataapp.ui.screens.ReportsScreen
-import com.example.khataapp.ui.screens.SetupScreen
 import com.example.khataapp.ui.screens.SplashScreen
 import com.example.khataapp.ui.screens.TransactionScreen
 
 object Routes {
-    const val SPLASH      = "splash"
-    const val ONBOARDING  = "onboarding"
-    const val SETUP       = "setup"
-    const val LOGIN       = "login"
-    const val HOME        = "home"
-    const val CUSTOMERS   = "customers"
-    const val REPORTS     = "reports"
-    const val PROFILE     = "profile"
-    const val OVERDUE     = "overdue"
-    const val EXPORT      = "export"
-    const val ALL_TRANSACTIONS  = "all_transactions"
-    const val ANALYTICS         = "analytics"
-    const val ADD_CUSTOMER      = "add_customer"
-    const val TRANSACTION_SCREEN  = "transaction_screen/{customerId}"
-    const val ADD_TRANSACTION     = "add_transaction/{customerId}"
-    const val EDIT_CUSTOMER       = "edit_customer/{customerId}"
-    const val CUSTOMER_STATEMENT  = "customer_statement/{customerId}"
+    const val SPLASH     = "splash"
+    const val ONBOARDING = "onboarding"
+    const val REGISTER   = "register"
+    const val LOGIN      = "login"
+    const val HOME       = "home"
+    const val CUSTOMERS  = "customers"
+    const val REPORTS    = "reports"
+    const val PROFILE    = "profile"
+    const val OVERDUE    = "overdue"
+    const val EXPORT     = "export"
+    const val ALL_TRANSACTIONS = "all_transactions"
+    const val ANALYTICS        = "analytics"
+    const val ADD_CUSTOMER     = "add_customer"
+    const val TRANSACTION_SCREEN = "transaction_screen/{customerId}"
+    const val ADD_TRANSACTION    = "add_transaction/{customerId}"
+    const val EDIT_CUSTOMER      = "edit_customer/{customerId}"
+    const val CUSTOMER_STATEMENT = "customer_statement/{customerId}"
 
     fun transactionScreen(customerId: Int) = "transaction_screen/$customerId"
     fun addTransaction(customerId: Int)    = "add_transaction/$customerId"
@@ -71,6 +71,11 @@ fun NavGraph(
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
                     }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
                 }
             )
         }
@@ -78,18 +83,18 @@ fun NavGraph(
         composable(Routes.ONBOARDING) {
             OnboardingScreen(
                 onGetStarted = {
-                    navController.navigate(Routes.SETUP) {
+                    navController.navigate(Routes.REGISTER) {
                         popUpTo(Routes.ONBOARDING) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(Routes.SETUP) {
-            SetupScreen(
-                onSetupComplete = {
+        composable(Routes.REGISTER) {
+            RegisterScreen(
+                onRegisterSuccess = {
                     navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.SETUP) { inclusive = true }
+                        popUpTo(Routes.REGISTER) { inclusive = true }
                     }
                 }
             )
@@ -101,6 +106,9 @@ fun NavGraph(
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Routes.REGISTER)
                 }
             )
         }

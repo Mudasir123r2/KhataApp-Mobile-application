@@ -74,7 +74,6 @@ fun AnalyticsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Key insights
             item {
                 SectionTitle("Key Insights")
                 Spacer(Modifier.height(8.dp))
@@ -89,7 +88,6 @@ fun AnalyticsScreen(
                 }
             }
 
-            // Highlights
             if (summary.mostActiveCustomer.isNotEmpty() || summary.peakMonth.isNotEmpty()) {
                 item {
                     Card(
@@ -114,7 +112,6 @@ fun AnalyticsScreen(
                 }
             }
 
-            // Monthly chart
             if (monthlyStats.isNotEmpty()) {
                 item {
                     SectionTitle("Last 6 Months — Credit vs Debit")
@@ -135,7 +132,6 @@ fun AnalyticsScreen(
                 }
             }
 
-            // Top customers by transactions
             if (topCustomers.isNotEmpty()) {
                 item {
                     SectionTitle("Most Active Customers")
@@ -193,7 +189,6 @@ private fun MonthBarRow(stat: MonthlyStat, maxVal: Double) {
             Text(stat.displayName, style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.width(56.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                // Credit bar
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -206,7 +201,6 @@ private fun MonthBarRow(stat: MonthlyStat, maxVal: Double) {
                     Text("₹%.0f".format(stat.credit), fontSize = 10.sp, color = CreditGreen,
                         fontWeight = FontWeight.Medium)
                 }
-                // Debit bar
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier

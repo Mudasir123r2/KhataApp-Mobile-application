@@ -53,7 +53,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
         )
 
-    // Customers with positive balance = they owe the shopkeeper
     val topDebtors: StateFlow<List<CustomerWithBalance>> = repo.customersWithBalance
         .map { list -> list.filter { it.balance > 0 }.sortedByDescending { it.balance }.take(5) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

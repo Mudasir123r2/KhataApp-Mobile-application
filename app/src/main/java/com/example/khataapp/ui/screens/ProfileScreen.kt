@@ -20,6 +20,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -63,28 +66,28 @@ fun ProfileScreen(
     onExport: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel()
 ) {
-    val profile      by viewModel.shopProfile.collectAsState()
-    val pinResult    by viewModel.pinChangeResult.collectAsState()
-    val profileSaved by viewModel.profileSaved.collectAsState()
+    val profile         by viewModel.shopProfile.collectAsState()
+    val passwordResult  by viewModel.passwordChangeResult.collectAsState()
+    val profileSaved    by viewModel.profileSaved.collectAsState()
 
-    var isEditing     by remember { mutableStateOf(false) }
-    var ownerName     by remember(profile) { mutableStateOf(profile.ownerName) }
-    var shopName      by remember(profile) { mutableStateOf(profile.shopName) }
-    var phone         by remember(profile) { mutableStateOf(profile.phone) }
-    var showPinDialog by remember { mutableStateOf(false) }
-    val snackbarHost  = remember { SnackbarHostState() }
+    var isEditing          by remember { mutableStateOf(false) }
+    var ownerName          by remember(profile) { mutableStateOf(profile.ownerName) }
+    var shopName           by remember(profile) { mutableStateOf(profile.shopName) }
+    var phone              by remember(profile) { mutableStateOf(profile.phone) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    val snackbarHost       = remember { SnackbarHostState() }
 
-    LaunchedEffect(pinResult) {
-        pinResult?.let { snackbarHost.showSnackbar(it); viewModel.clearPinResult() }
+    LaunchedEffect(passwordResult) {
+        passwordResult?.let { snackbarHost.showSnackbar(it); viewModel.clearPasswordResult() }
     }
     LaunchedEffect(profileSaved) {
         if (profileSaved) { isEditing = false; snackbarHost.showSnackbar("Profile updated"); viewModel.clearProfileSaved() }
     }
 
-    if (showPinDialog) {
-        ChangePinDialog(
-            onConfirm = { cur, new, conf -> viewModel.changePin(cur, new, conf) },
-            onDismiss = { showPinDialog = false }
+    if (showPasswordDialog) {
+        ChangePasswordDialog(
+            onConfirm = { cur, new, conf -> viewModel.changePassword(cur, new, conf) },
+            onDismiss = { showPasswordDialog = false }
         )
     }
 
@@ -109,8 +112,8 @@ fun ProfileScreen(
                 )
             )
         },
-        snackbarHost    = { SnackbarHost(snackbarHost) },
-        containerColor  = MaterialTheme.colorScheme.background
+        snackbarHost   = { SnackbarHost(snackbarHost) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
@@ -143,14 +146,14 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                            .clickable { showPinDialog = true }
+                            .clickable { showPasswordDialog = true }
                             .padding(12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("🔒  Change PIN", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                            Text("Update your 4-digit access PIN", style = MaterialTheme.typography.bodySmall,
+                            Text("🔒  Change Password", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                            Text("Update your login password", style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Text("›", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -192,9 +195,7 @@ fun ProfileScreen(
                     onClick = onLogout,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error)
                 ) {
                     Text("Logout", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 4.dp))
@@ -258,38 +259,71 @@ private fun ProfileField(
     label: String, value: String, onChange: (String) -> Unit,
     cap: KeyboardCapitalization, keyboardType: KeyboardType = KeyboardType.Text
 ) {
-    OutlinedTextField(value = value, onValueChange = onChange, label = { Text(label) },
+    OutlinedTextField(
+        value = value, onValueChange = onChange, label = { Text(label) },
         modifier = Modifier.fillMaxWidth(), singleLine = true,
-        keyboardOptions = KeyboardOptions(capitalization = cap, keyboardType = keyboardType))
+        keyboardOptions = KeyboardOptions(capitalization = cap, keyboardType = keyboardType)
+    )
 }
 
 @Composable
-private fun ChangePinDialog(onConfirm: (String, String, String) -> Unit, onDismiss: () -> Unit) {
-    var current by remember { mutableStateOf("") }
-    var newPin  by remember { mutableStateOf("") }
-    var confirm by remember { mutableStateOf("") }
+private fun ChangePasswordDialog(onConfirm: (String, String, String) -> Unit, onDismiss: () -> Unit) {
+    var current        by remember { mutableStateOf("") }
+    var newPassword    by remember { mutableStateOf("") }
+    var confirm        by remember { mutableStateOf("") }
+    var currentVisible by remember { mutableStateOf(false) }
+    var newVisible     by remember { mutableStateOf(false) }
+    var confirmVisible by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Change PIN") },
+        title = { Text("Change Password") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                PinInput("Current PIN", current) { if (it.length <= 4 && it.all(Char::isDigit)) current = it }
-                PinInput("New PIN",     newPin)  { if (it.length <= 4 && it.all(Char::isDigit)) newPin = it }
-                PinInput("Confirm PIN", confirm) { if (it.length <= 4 && it.all(Char::isDigit)) confirm = it }
+                PasswordInput("Current Password", current, currentVisible,
+                    { current = it }, { currentVisible = !currentVisible })
+                PasswordInput("New Password", newPassword, newVisible,
+                    { newPassword = it }, { newVisible = !newVisible })
+                PasswordInput("Confirm New Password", confirm, confirmVisible,
+                    { confirm = it }, { confirmVisible = !confirmVisible },
+                    isError = confirm.isNotEmpty() && newPassword != confirm
+                )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(current, newPin, confirm); onDismiss() }) { Text("Change") }
+            TextButton(onClick = { onConfirm(current, newPassword, confirm); onDismiss() }) {
+                Text("Change")
+            }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
     )
 }
 
 @Composable
-private fun PinInput(label: String, value: String, onChange: (String) -> Unit) {
-    OutlinedTextField(value = value, onValueChange = onChange, label = { Text(label) },
-        modifier = Modifier.fillMaxWidth(), singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
+private fun PasswordInput(
+    label: String,
+    value: String,
+    visible: Boolean,
+    onChange: (String) -> Unit,
+    onToggle: () -> Unit,
+    isError: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onChange,
+        label = { Text(label) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        isError = isError,
+        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        trailingIcon = {
+            IconButton(onClick = onToggle) {
+                Icon(
+                    imageVector = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    contentDescription = null
+                )
+            }
+        }
+    )
 }

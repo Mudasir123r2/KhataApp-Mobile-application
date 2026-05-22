@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -20,8 +19,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     val shopProfile: StateFlow<ShopProfile> = auth.shopProfile
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ShopProfile())
 
-    private val _pinChangeResult = MutableStateFlow<String?>(null)
-    val pinChangeResult: StateFlow<String?> = _pinChangeResult.asStateFlow()
+    private val _passwordChangeResult = MutableStateFlow<String?>(null)
+    val passwordChangeResult: StateFlow<String?> = _passwordChangeResult.asStateFlow()
 
     private val _profileSaved = MutableStateFlow(false)
     val profileSaved: StateFlow<Boolean> = _profileSaved.asStateFlow()
@@ -33,17 +32,21 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun changePin(current: String, newPin: String, confirm: String) {
+    fun changePassword(current: String, newPassword: String, confirm: String) {
         viewModelScope.launch {
-            if (newPin != confirm) { _pinChangeResult.value = "New PINs do not match"; return@launch }
-            if (newPin.length != 4) { _pinChangeResult.value = "PIN must be 4 digits"; return@launch }
-            val valid = auth.verifyPin(current).first()
-            if (!valid) { _pinChangeResult.value = "Current PIN is incorrect"; return@launch }
-            auth.changePin(newPin)
-            _pinChangeResult.value = "PIN changed successfully"
+            when {
+                newPassword != confirm    -> { _passwordChangeResult.value = "New passwords do not match"; return@launch }
+                newPassword.length < 6   -> { _passwordChangeResult.value = "Password must be at least 6 characters"; return@launch }
+                current.isBlank()        -> { _passwordChangeResult.value = "Enter your current password"; return@launch }
+            }
+            val result = auth.changePassword(current, newPassword)
+            _passwordChangeResult.value = result.fold(
+                onSuccess = { "Password changed successfully" },
+                onFailure = { it.message ?: "Failed to change password" }
+            )
         }
     }
 
-    fun clearPinResult() { _pinChangeResult.value = null }
-    fun clearProfileSaved() { _profileSaved.value = false }
+    fun clearPasswordResult() { _passwordChangeResult.value = null }
+    fun clearProfileSaved()   { _profileSaved.value = false }
 }

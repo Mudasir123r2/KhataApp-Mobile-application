@@ -14,8 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,10 +32,9 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     onNavigateToOnboarding: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToHome: () -> Unit,
     authViewModel: AuthViewModel = viewModel()
 ) {
-    val isSetupDone by authViewModel.isSetupDone.collectAsState()
-
     val scale = remember { Animatable(0.6f) }
     val alpha = remember { Animatable(0f) }
 
@@ -45,7 +42,13 @@ fun SplashScreen(
         scale.animateTo(1f, tween(600))
         alpha.animateTo(1f, tween(400))
         delay(1400)
-        if (isSetupDone) onNavigateToLogin() else onNavigateToOnboarding()
+        authViewModel.getAuthNavigation { loggedIn, hasUsers ->
+            when {
+                loggedIn -> onNavigateToHome()
+                hasUsers -> onNavigateToLogin()
+                else     -> onNavigateToOnboarding()
+            }
+        }
     }
 
     Box(
